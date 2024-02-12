@@ -1,6 +1,5 @@
 import mysql.connector
 from faker import Faker
-import random
 
 # Connect to MySQL database
 connection = mysql.connector.connect(
@@ -18,7 +17,7 @@ CREATE TABLE IF NOT EXISTS my_table (
     firstname VARCHAR(255),
     lastname VARCHAR(255),
     email VARCHAR(255),
-    phonenumber VARCHAR(20),  # Modify the length to 10
+    phonenumber VARCHAR(10),  # Modify the length to 10
     address VARCHAR(255),
     INDEX idx_firstname (firstname),
     INDEX idx_lastname (lastname),
@@ -39,7 +38,7 @@ def populate_table(num_records):
         firstname = fake.first_name()
         lastname = fake.last_name()
         email = fake.email()
-        phonenumber = fake.phone_number().replace(' ', '')[:10]  # Get first 10 digits and remove spaces
+        phonenumber = fake.phone_number().replace('(', '').replace(')', '').replace('-', '')[:10]  # Get first 10 digits and remove formatting
         address = fake.address()
         
         sample_records.append({
@@ -59,9 +58,9 @@ def populate_table(num_records):
     cursor.executemany(insert_query, [(record['firstname'], record['lastname'], record['email'], record['phonenumber'], record['address']) for record in sample_records])
     connection.commit()  # Commit the records
 
-# Call the function to populate the table with 1000 records
-populate_table(1000)
 
-# Close the cursor and connection
+populate_table(10000000)
+
+
 cursor.close()
 connection.close()
