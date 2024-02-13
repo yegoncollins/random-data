@@ -31,36 +31,33 @@ cursor.execute(create_table_query)
 # Faker instance
 fake = Faker()
 
-# Function to generate and insert records
-def populate_table(num_records):
-    sample_records = []
-    for _ in range(num_records):
-        firstname = fake.first_name()
-        lastname = fake.last_name()
-        email = fake.email()
-        phonenumber = fake.phone_number().replace('(', '').replace(')', '').replace('-', '')[:10]  # Get first 10 digits and remove formatting
-        address = fake.address()
-        
-        sample_records.append({
-            'firstname': firstname,
-            'lastname': lastname,
-            'email': email,
-            'phonenumber': phonenumber,
-            'address': address
-        })
+# Function to generate and insert records in batches
+def populate_table(num_records, batch_size=10000):
+    for _ in range(0, num_records, batch_size):
+        sample_records = []
+        for _ in range(batch_size):
+            firstname = fake.first_name()
+            lastname = fake.last_name()
+            email = fake.email()
+            phonenumber = fake.phone_number().replace('(', '').replace(')', '').replace('-', '')[:10]  # Get first 10 digits and remove formatting
+            address = fake.address()
+            
+            sample_records.append((firstname, lastname, email, phonenumber, address))
 
-    insert_query = """
-    INSERT INTO my_table 
-        (firstname, lastname, email, phonenumber, address)
-    VALUES 
-        (%s, %s, %s, %s, %s)
-    """
-    cursor.executemany(insert_query, [(record['firstname'], record['lastname'], record['email'], record['phonenumber'], record['address']) for record in sample_records])
-    connection.commit()  # Commit the records
+        insert_query = """
+        INSERT INTO my_table 
+            (firstname, lastname, email, phonenumber, address)
+        VALUES 
+            (%s, %s, %s, %s, %s)
+        """
+        cursor.executemany(insert_query, sample_records)
+        connection.commit()  # Commit the records
 
+    print(f"{num_records} records inserted successfully.")
 
+# Call the function to populate the table
 populate_table(10000000)
 
-
+# Close the cursor and connection
 cursor.close()
 connection.close()
